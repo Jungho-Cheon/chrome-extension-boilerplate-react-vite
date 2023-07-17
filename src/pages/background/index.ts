@@ -1,3 +1,4 @@
+import { SearchImageMessage } from "@/src/types/message";
 import reloadOnUpdate from "virtual:reload-on-update-in-background-script";
 
 reloadOnUpdate("pages/background");
@@ -8,4 +9,20 @@ reloadOnUpdate("pages/background");
  */
 reloadOnUpdate("pages/content/style.scss");
 
-console.log("background loaded");
+chrome.runtime.onInstalled.addListener(() => {
+	chrome.contextMenus.create({
+		id: "SSM_IMAGE_SEARCH",
+		title: "신상마켓에서 유사한 이미지 찾기",
+		contexts: ["image"],
+	});
+});
+chrome.contextMenus.onClicked.addListener((info) => {
+	chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+		const message: SearchImageMessage = {
+			type: "searchImage",
+			imageUrl: info.srcUrl,
+		};
+
+		chrome.tabs.sendMessage(tabs[0].id, message);
+	});
+});
